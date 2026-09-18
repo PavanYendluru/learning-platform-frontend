@@ -1,0 +1,434 @@
+
+/* =========================================
+   DASHBOARD CONTENT
+========================================= */
+
+.dashboard-content {
+  width: 100%;
+  max-width: var(--content-max);
+
+  padding: clamp(1.1rem, 2vw, 1.75rem);
+
+  margin: 0 auto;
+}
+
+
+/* =========================================
+   MAIN DASHBOARD GRID
+========================================= */
+
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(16rem, 1fr);
+
+  gap: 1rem;
+
+  margin-top: 1.25rem;
+}
+
+
+/* =========================================
+   CONTINUE LEARNING CARD
+========================================= */
+
+.continue-card {
+  min-height: 17.5rem;
+
+  display: grid;
+
+  grid-template-columns:
+    36%
+    minmax(0, 1fr);
+
+  overflow: hidden;
+
+  background: var(--color-surface);
+
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-card);
+}
+
+
+/* Course Artwork Section */
+
+.course-art {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      #dceeee,
+      #0e2634 64%,
+      #152139
+    );
+
+  display: flex;
+  align-items: end;
+
+  padding: 1rem;
+
+  color: #fff;
+}
+
+.course-art::after {
+  content: "";
+  position: absolute;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 50%;
+  right: -3.5rem;
+  top: -3.5rem;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.course-art > * {
+  position: relative;
+  z-index: 1;
+}
+
+.course-art > span {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.spring-logo {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  color: #d5f9ff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+
+/* Continue Learning Content */
+
+.continue-body {
+  position: relative;
+
+  min-width: 0;
+
+  padding: 1.15rem 1.25rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Course Title */
+
+.continue-body h2 {
+  font:
+    800 clamp(1.15rem, 1.6vw, 1.45rem) / 1.15
+    var(--font-display);
+
+  margin: 0.15rem 2rem 0.45rem 0;
+}
+
+.continue-body b {
+  color: var(--color-primary-text);
+  font-size: var(--text-sm);
+}
+
+.continue-body p {
+  margin: 0.45rem 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.bookmark-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  background: var(--color-paper);
+}
+
+.bookmark-button:hover {
+  background: var(--color-primary-soft);
+}
+
+.continue-footer {
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+
+.continue-footer > div:first-child,
+.progress-group > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.continue-footer strong,
+.progress-group strong {
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+}
+
+
+/* Continue Learning Button */
+
+.continue-button {
+  height: 2.6rem;
+
+  border: 0;
+  border-radius: 0.6rem;
+
+  background: var(--color-primary);
+  color: #fff;
+
+  font-weight: 800;
+
+  margin-top: 1rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.4rem;
+}
+
+
+/* =========================================
+   STATISTICS GRID
+========================================= */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 0.75rem;
+}
+
+
+/* Individual Statistic Card */
+
+.stat-card {
+  min-height: 8.5rem;
+
+  border-radius: var(--radius-xl);
+
+  background: var(--color-surface);
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card .stat-icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.55rem;
+  border-radius: 0.85rem;
+}
+
+.stat-card strong {
+  color: var(--color-ink);
+  font: 800 var(--text-2xl) / 1 var(--font-display);
+}
+
+.stat-card > span:last-child {
+  margin-top: 0.35rem;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-align: center;
+}
+
+.stat-card.compass .stat-icon { color: #2878df; background: rgba(40, 120, 223, 0.15); }
+.stat-card.check .stat-icon { color: #10996d; background: rgba(16, 153, 109, 0.15); }
+.stat-card.bookmark .stat-icon { color: #d57b17; background: rgba(213, 123, 23, 0.15); }
+.stat-card.trend .stat-icon { color: #7251d7; background: rgba(114, 81, 215, 0.15); }
+
+
+/* =========================================
+   ONGOING COURSES
+========================================= */
+
+.ongoing {
+  margin-top: 1.6rem;
+}
+
+
+/* Section Heading */
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 0.85rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: var(--color-ink);
+  font: 800 var(--text-xl) / 1.25 var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+
+/* =========================================
+   COURSE GRID
+========================================= */
+
+.course-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 0.85rem;
+}
+
+
+/* =========================================
+   COURSE CARD
+========================================= */
+
+.course-card {
+  position: relative;
+
+  min-height: 12.5rem;
+
+  padding: 1rem;
+
+  background: var(--color-surface);
+
+  border-radius: var(--radius-xl);
+
+  box-shadow: var(--shadow-card);
+}
+
+.course-symbol {
+  width: 2.65rem;
+  height: 2.65rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.course-symbol.frontend { color: #1479d4; background: #e3f1ff; }
+.course-symbol.backend { color: #7b4ad6; background: #eee7ff; }
+.course-symbol.database { color: #0e967b; background: #dff8f1; }
+
+.course-tag {
+  color: var(--color-primary-text);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.course-card h3 {
+  margin: 0.35rem 0;
+  color: var(--color-ink);
+  font: 800 var(--text-lg) / 1.25 var(--font-display);
+}
+
+.course-card p {
+  min-height: 2.8em;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.progress-group {
+  margin-top: 0.85rem;
+}
+
+.progress-track {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: #dce3f6;
+}
+
+.progress-track > .progress-fill,
+.progress-track > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #16b786, #36d1a4);
+  transition: width 0.25s ease;
+}
+
+
+/* =========================================
+   TABLET / SMALL DESKTOP
+========================================= */
+
+@media (max-width: 1160px) {
+  /* Stack the main dashboard sections */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Display statistics in one row */
+  .stats-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+  }
+
+  /* Reduce course cards to two columns */
+  .course-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 720px) {
+  /* Stack statistics vertically */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack course cards vertically */
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stack the Continue Learning card */
+  .continue-card {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,81 @@
+.progress-content {
+  width: 100%;
+  max-width: var(--content-max);
+  padding: clamp(1.1rem, 2vw, 1.75rem);
+  margin: 0 auto;
+}
+
+.progress-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.progress-summary-card {
+  padding: 1.25rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-summary-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.progress-summary-card strong {
+  display: block;
+  font: 800 var(--text-2xl) / 1.1 var(--font-display);
+  color: var(--color-ink);
+}
+
+.progress-summary-card span {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.progress-detail-section {
+  margin-top: 1.5rem;
+}
+
+.progress-detail-section h2 {
+  margin: 0 0 1.25rem;
+  font: 800 var(--text-xl) / 1.2 var(--font-display);
+  color: var(--color-ink);
+}
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.progress-item-card {
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.progress-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.progress-item-header h3 {
+  margin: 0;
+  font: 800 var(--text-lg) / 1.2 var(--font-display);
+  color: var(--color-ink);
+}

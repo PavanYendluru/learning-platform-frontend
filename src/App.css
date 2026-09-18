@@ -1,0 +1,150 @@
+.auth-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* still on the right half */
+  padding: 1.25rem clamp(2rem, 8vw, 6rem) 1.25rem clamp(1.25rem, 4vw, 3rem);
+  /* top | right | bottom | left  — larger right padding pulls the card left */
+  background-color: #0f1220;
+  background-image: url("/images/video_tutorial.png");
+  background-size: 100% 100%; /* or contain / 100% 100% — keep what you use now */
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.auth-page::before {
+  content: none; /* completely disables the dark overlay */
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 25rem);
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+  background: rgba(231, 231, 232, 0.95);
+  box-shadow: var(--shadow-card-hover);
+  backdrop-filter: blur(8px);
+}
+
+.auth-kicker {
+  margin: 0 0 0.75rem;
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+.auth-card h1 {
+  margin: 0;
+  color: var(--color-ink);
+  font: 800 var(--text-2xl) / 1.2 var(--font-display);
+}
+
+.auth-card > p:not(.auth-kicker):not(.auth-switch) {
+  margin: 0.6rem 0 1.5rem;
+  color: var(--color-muted);
+}
+
+.auth-card .btn {
+  width: 100%;
+  text-decoration: none;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 0.9rem;
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.auth-field input {
+  width: 100%;
+  height: 2.6rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-paper);
+}
+
+.auth-field input:focus {
+  border-color: var(--color-primary);
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.auth-error {
+  margin: 0 0 0.9rem;
+  color: #b42323;
+  font-size: var(--text-sm);
+}
+
+.auth-card .btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.auth-switch {
+  margin: 1.25rem 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    justify-content: center; /* centers form on small screens */
+    padding: 1rem;
+  }
+}
+
+/* Role toggle */
+.auth-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  padding: 0.3rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+}
+
+.auth-role-btn {
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 2px);
+  padding: 0.55rem 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-role-btn:hover {
+  color: var(--color-ink);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.auth-role-btn.active {
+  color: #fff;
+  background: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.auth-switch-note {
+  font-size: var(--text-xs);
+  opacity: 0.85;
+}

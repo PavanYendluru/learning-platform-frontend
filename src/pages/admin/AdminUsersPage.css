@@ -1,0 +1,105 @@
+.admin-users-container {
+  width: 100%;
+  max-width: var(--content-max, 1200px);
+  padding: clamp(1.1rem, 2vw, 1.75rem);
+  margin: 0 auto;
+}
+
+.admin-users-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 15rem;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 0.6rem 0.8rem 0.6rem 2.4rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-line, #e2e8f0);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-ink, #0f172a);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.search-input-wrapper .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted, #64748b);
+  pointer-events: none;
+}
+
+.filter-select {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-line, #e2e8f0);
+  background: var(--color-surface, #ffffff);
+  color: var(--color-ink, #0f172a);
+  font-size: var(--text-sm, 0.875rem);
+  min-width: 9rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.status-pill.admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary, #6366f1);
+}
+
+.status-pill.user {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--color-muted, #64748b);
+}
+
+.status-pill.completed,
+.status-pill.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.status-pill.inactive,
+.status-pill.suspended {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.stat-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-line, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  text-align: center;
+}
+
+.stat-mini-card strong {
+  font-size: var(--text-lg, 1.125rem);
+  font-weight: 800;
+  color: var(--color-ink, #0f172a);
+}
+
+.stat-mini-card span {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-muted, #64748b);
+}
