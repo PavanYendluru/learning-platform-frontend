@@ -93,7 +93,13 @@ export function ResourceFormModal({
           <input
             type="url"
             required
-            placeholder="https://www.youtube.com/watch?v=... or https://docs..."
+            placeholder={
+              formData.resourceType === "DOCUMENTATION"
+                ? "https://docs.spring.io/... or official documentation URL"
+                : formData.resourceType === "VIDEO"
+                ? "https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                : "https://..."
+            }
             value={formData.externalUrl}
             onChange={(e) => onFormChange({ ...formData, externalUrl: e.target.value })}
             style={{ height: "2.5rem", padding: "0 0.75rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
@@ -101,16 +107,23 @@ export function ResourceFormModal({
         </label>
 
         {/* Resource Type & Difficulty */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: formData.resourceType === "VIDEO" ? "1fr 1fr 1fr" : "1fr 1fr", gap: "0.75rem" }}>
           <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "var(--text-sm)", fontWeight: 700 }}>
             <span>Resource Type</span>
             <select
               value={formData.resourceType}
-              onChange={(e) => onFormChange({ ...formData, resourceType: e.target.value as ResourceType })}
+              onChange={(e) => {
+                const nextType = e.target.value as ResourceType;
+                onFormChange({
+                  ...formData,
+                  resourceType: nextType,
+                  youtubeContentType: nextType === "VIDEO" ? (formData.youtubeContentType || "VIDEO") : undefined,
+                });
+              }}
               style={{ height: "2.5rem", padding: "0 0.75rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
             >
-              <option value="VIDEO">VIDEO</option>
               <option value="DOCUMENTATION">DOCUMENTATION</option>
+              <option value="VIDEO">VIDEO</option>
               <option value="BOOK">BOOK</option>
               <option value="RESEARCH_PAPER">RESEARCH_PAPER</option>
               <option value="ARTICLE">ARTICLE</option>
@@ -121,6 +134,21 @@ export function ResourceFormModal({
               <option value="TECHNOLOGY_UPDATE">TECHNOLOGY_UPDATE</option>
             </select>
           </label>
+
+          {formData.resourceType === "VIDEO" && (
+            <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "var(--text-sm)", fontWeight: 700 }}>
+              <span>YouTube Type</span>
+              <select
+                value={formData.youtubeContentType ?? "VIDEO"}
+                onChange={(e) => onFormChange({ ...formData, youtubeContentType: e.target.value as any })}
+                style={{ height: "2.5rem", padding: "0 0.75rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
+              >
+                <option value="VIDEO">Video</option>
+                <option value="PLAYLIST">Playlist</option>
+                <option value="FULL_COURSE">Full Course</option>
+              </select>
+            </label>
+          )}
 
           <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "var(--text-sm)", fontWeight: 700 }}>
             <span>Difficulty Level</span>

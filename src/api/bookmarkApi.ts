@@ -7,6 +7,10 @@ export interface BackendBookmark {
   resourceTitle: string;
   resourceType: string;
   externalUrl?: string;
+  topicId?: number;
+  topicName?: string;
+  domainId?: number;
+  domainName?: string;
   createdAt?: string;
 }
 

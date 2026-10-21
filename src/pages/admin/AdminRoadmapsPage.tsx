@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { adminApi, type CreateRoadmapPayload } from "../../api/adminApi";
 import { roadmapApi, type BackendRoadmap } from "../../api/roadmapApi";
 import { domainApi } from "../../api/domainApi";
-import type { Domain } from "../../types/dashboard.types";
+import type { Domain, Topic } from "../../types/dashboard.types";
 import { AdminDataTable, type Column } from "../../components/admin/AdminDataTable";
 import { AdminModal } from "../../components/admin/AdminModal";
 import { Button } from "../../components/common/Button";
@@ -14,6 +14,7 @@ import { Icon } from "../../components/layout/Icon";
 import { useToast } from "../../hooks/useToast";
 
 interface LocalStep {
+  topicId?: number;
   title: string;
   description: string;
   stepOrder: number;
@@ -24,6 +25,8 @@ export function AdminRoadmapsPage() {
   const toast = useToast();
   const [roadmaps, setRoadmaps] = useState<BackendRoadmap[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
+  const [domainTopics, setDomainTopics] = useState<Topic[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -46,8 +49,24 @@ export function AdminRoadmapsPage() {
   const [stepsList, setStepsList] = useState<LocalStep[]>([]);
 
   useEffect(() => {
-    domainApi.getDomains().then((res) => setDomains(res)).catch(() => {});
+    domainApi.getDomains().then((res) => {
+      setDomains(res);
+      if (res.length > 0 && !formData.domainId) {
+        setFormData((prev) => ({ ...prev, domainId: res[0].id }));
+      }
+    }).catch(() => {});
   }, []);
+
+  // Fetch topics whenever the selected domainId in formData changes
+  useEffect(() => {
+    if (!formData.domainId) return;
+    setTopicsLoading(true);
+    adminApi
+      .getAdminTopicsByDomain(formData.domainId)
+      .then((res) => setDomainTopics(res))
+      .catch(() => setDomainTopics([]))
+      .finally(() => setTopicsLoading(false));
+  }, [formData.domainId]);
 
   const fetchRoadmaps = () => {
     setLoading(true);
@@ -60,20 +79,22 @@ export function AdminRoadmapsPage() {
             id: 1,
             title: "Full-Stack Java & Spring Boot Engineer",
             description: "From Core Java 21 to Spring Boot 3 microservices.",
+            domainId: 1,
             domainName: "Java & Spring Boot",
             steps: [
-              { id: 1, title: "Java 21 Fundamentals", description: "Syntax, OOP, Collections", stepOrder: 1 },
-              { id: 2, title: "Spring Boot 3 & REST APIs", description: "Controllers, Services, JPA", stepOrder: 2 },
+              { id: 1, title: "Java 21 Fundamentals", description: "Syntax, OOP, Collections", stepOrder: 1, topicId: 101, topicName: "Java Fundamentals" },
+              { id: 2, title: "Spring Boot 3 & REST APIs", description: "Controllers, Services, JPA", stepOrder: 2, topicId: 102, topicName: "Spring Boot REST APIs" },
             ],
           },
           {
             id: 2,
             title: "Modern Frontend Developer with React 19",
             description: "TypeScript, React 19 hooks, and state architecture.",
+            domainId: 2,
             domainName: "Frontend & React",
             steps: [
-              { id: 3, title: "Modern HTML & CSS Grid", description: "Responsive Layouts", stepOrder: 1 },
-              { id: 4, title: "React 19 & TypeScript", description: "Hooks, Context, Router", stepOrder: 2 },
+              { id: 3, title: "Modern HTML & CSS Grid", description: "Responsive Layouts", stepOrder: 1, topicId: 201, topicName: "HTML & CSS" },
+              { id: 4, title: "React 19 & TypeScript", description: "Hooks, Context, Router", stepOrder: 2, topicId: 202, topicName: "React Basics" },
             ],
           },
         ]);
@@ -87,25 +108,34 @@ export function AdminRoadmapsPage() {
 
   function handleOpenCreate() {
     setEditingRoadmap(null);
-    setFormData({ title: "", description: "", domainId: domains[0]?.id ?? 1, status: "PUBLISHED", steps: [] });
+    const initialDomainId = domains[0]?.id ?? 1;
+    setFormData({
+      title: "",
+      description: "",
+      domainId: initialDomainId,
+      status: "PUBLISHED",
+      steps: [],
+    });
     setStepsList([
-      { title: "Stage 1: Core Fundamentals", description: "Foundational concepts", stepOrder: 1 },
-      { title: "Stage 2: Advanced Patterns", description: "Production implementations", stepOrder: 2 },
+      { topicId: undefined, title: "Stage 1: Core Fundamentals", description: "Foundational concepts", stepOrder: 1 },
+      { topicId: undefined, title: "Stage 2: Advanced Patterns", description: "Production implementations", stepOrder: 2 },
     ]);
     setIsModalOpen(true);
   }
 
   function handleOpenEdit(roadmap: BackendRoadmap) {
     setEditingRoadmap(roadmap);
+    const domainId = roadmap.domainId ?? domains[0]?.id ?? 1;
     setFormData({
       title: roadmap.title,
       description: roadmap.description,
-      domainId: 1,
+      domainId,
       status: roadmap.status ?? "PUBLISHED",
       steps: [],
     });
     setStepsList(
       roadmap.steps?.map((s) => ({
+        topicId: s.topicId,
         title: s.title,
         description: s.description ?? "",
         stepOrder: s.stepOrder,
@@ -118,6 +148,7 @@ export function AdminRoadmapsPage() {
     setStepsList([
       ...stepsList,
       {
+        topicId: undefined,
         title: `Stage ${stepsList.length + 1}`,
         description: "",
         stepOrder: stepsList.length + 1,
@@ -126,7 +157,31 @@ export function AdminRoadmapsPage() {
   }
 
   function handleRemoveStep(index: number) {
-    setStepsList(stepsList.filter((_, i) => i !== index));
+    setStepsList(stepsList.filter((_, i) => i !== index).map((s, idx) => ({ ...s, stepOrder: idx + 1 })));
+  }
+
+  function handleMoveStep(fromIndex: number, toIndex: number) {
+    if (toIndex < 0 || toIndex >= stepsList.length) return;
+    const copy = [...stepsList];
+    const [moved] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, moved);
+    setStepsList(copy.map((s, idx) => ({ ...s, stepOrder: idx + 1 })));
+  }
+
+  function handleTopicChangeForStep(index: number, topicId?: number) {
+    const selectedTopic = domainTopics.find((t) => t.id === topicId);
+    const copy = [...stepsList];
+    const step = copy[index];
+    step.topicId = topicId;
+    if (selectedTopic) {
+      if (!step.title || step.title.startsWith("Stage ")) {
+        step.title = selectedTopic.name;
+      }
+      if (!step.description && selectedTopic.description) {
+        step.description = selectedTopic.description;
+      }
+    }
+    setStepsList(copy);
   }
 
   async function handleSubmitRoadmap(e: FormEvent) {
@@ -136,10 +191,19 @@ export function AdminRoadmapsPage() {
       return;
     }
 
+    // Duplicate topic validation
+    const assignedTopicIds = stepsList.map((s) => s.topicId).filter((id): id is number => Boolean(id));
+    const uniqueTopics = new Set(assignedTopicIds);
+    if (uniqueTopics.size !== assignedTopicIds.length) {
+      toast.error("Duplicate topics detected! Each roadmap step must reference a distinct topic.");
+      return;
+    }
+
     setIsSubmitting(true);
     const payload: CreateRoadmapPayload = {
       ...formData,
       steps: stepsList.map((s, idx) => ({
+        topicId: s.topicId,
         title: s.title,
         description: s.description,
         stepOrder: idx + 1,
@@ -230,7 +294,16 @@ export function AdminRoadmapsPage() {
     },
     {
       header: "Stages",
-      accessor: (r) => <span className="status-pill in-progress">{r.steps?.length ?? 0} Stages</span>,
+      accessor: (r) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+          <span className="status-pill in-progress">{r.steps?.length ?? 0} Steps</span>
+          {r.steps && r.steps.some((s) => s.topicId) && (
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-primary)" }}>
+              {r.steps.filter((s) => s.topicId).length} linked topics
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: "Actions",
@@ -338,46 +411,155 @@ export function AdminRoadmapsPage() {
           {/* Stages Builder */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-              <span style={{ fontSize: "var(--text-sm)", fontWeight: 700 }}>Roadmap Stage Steps ({stepsList.length})</span>
+              <div>
+                <span style={{ fontSize: "var(--text-sm)", fontWeight: 700, display: "block" }}>
+                  Roadmap Ordered Topic Steps ({stepsList.length})
+                </span>
+                <span style={{ fontSize: "var(--text-xs)", color: "var(--color-muted)" }}>
+                  Link each step to an existing domain topic to establish the learning sequence.
+                </span>
+              </div>
               <Button type="button" variant="ghost" onClick={handleAddStep} style={{ fontSize: "var(--text-xs)", padding: "0.2rem 0.5rem" }}>
-                + Add Stage Step
+                + Add Step
               </Button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", maxHeight: "12rem", overflowY: "auto" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", maxHeight: "16rem", overflowY: "auto", paddingRight: "0.25rem" }}>
               {stepsList.map((step, idx) => (
-                <div key={idx} style={{ display: "flex", gap: "0.5rem", alignItems: "center", background: "var(--color-surface)", padding: "0.5rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)" }}>
-                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 800 }}>#{idx + 1}</span>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Step Title"
-                    value={step.title}
-                    onChange={(e) => {
-                      const copy = [...stepsList];
-                      copy[idx].title = e.target.value;
-                      setStepsList(copy);
-                    }}
-                    style={{ flex: 1, height: "2rem", padding: "0 0.5rem", fontSize: "var(--text-xs)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Brief description"
-                    value={step.description}
-                    onChange={(e) => {
-                      const copy = [...stepsList];
-                      copy[idx].description = e.target.value;
-                      setStepsList(copy);
-                    }}
-                    style={{ flex: 1, height: "2rem", padding: "0 0.5rem", fontSize: "var(--text-xs)", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveStep(idx)}
-                    style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--color-danger)" }}
-                  >
-                    <Icon name="close" size={16} />
-                  </button>
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.4rem",
+                    background: "var(--color-surface)",
+                    padding: "0.65rem",
+                    borderRadius: "var(--radius-sm)",
+                    border: "1px solid var(--color-line)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ fontSize: "var(--text-xs)", fontWeight: 800, minWidth: "1.75rem" }}>#{idx + 1}</span>
+
+                    {/* Reorder Up / Down */}
+                    <div style={{ display: "flex", gap: "0.15rem" }}>
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveStep(idx, idx - 1)}
+                        title="Move Step Up"
+                        style={{
+                          border: "1px solid var(--color-line)",
+                          background: "var(--color-paper)",
+                          color: idx === 0 ? "var(--color-muted)" : "var(--color-ink)",
+                          borderRadius: "var(--radius-xs, 4px)",
+                          cursor: idx === 0 ? "not-allowed" : "pointer",
+                          padding: "0.2rem 0.35rem",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Icon name="chevronUp" size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === stepsList.length - 1}
+                        onClick={() => handleMoveStep(idx, idx + 1)}
+                        title="Move Step Down"
+                        style={{
+                          border: "1px solid var(--color-line)",
+                          background: "var(--color-paper)",
+                          color: idx === stepsList.length - 1 ? "var(--color-muted)" : "var(--color-ink)",
+                          borderRadius: "var(--radius-xs, 4px)",
+                          cursor: idx === stepsList.length - 1 ? "not-allowed" : "pointer",
+                          padding: "0.2rem 0.35rem",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Icon name="chevronDown" size={14} />
+                      </button>
+                    </div>
+
+                    {/* Connect to Topic Select */}
+                    <select
+                      value={step.topicId ?? ""}
+                      disabled={topicsLoading}
+                      onChange={(e) => handleTopicChangeForStep(idx, e.target.value ? Number(e.target.value) : undefined)}
+                      style={{
+                        flex: 1,
+                        height: "2rem",
+                        padding: "0 0.5rem",
+                        fontSize: "var(--text-xs)",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--color-line)",
+                        background: "var(--color-paper)",
+                        color: "var(--color-ink)",
+                      }}
+                    >
+                      <option value="">
+                        {topicsLoading ? "-- Loading domain topics... --" : "-- Connect to Domain Topic --"}
+                      </option>
+                      {domainTopics.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.sequenceNumber ? `Topic #${t.sequenceNumber}: ` : ""}{t.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStep(idx)}
+                      title="Remove Step"
+                      style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--color-danger)", padding: "0.2rem" }}
+                    >
+                      <Icon name="close" size={16} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Step Title *"
+                      value={step.title}
+                      onChange={(e) => {
+                        const copy = [...stepsList];
+                        copy[idx].title = e.target.value;
+                        setStepsList(copy);
+                      }}
+                      style={{
+                        flex: 1,
+                        height: "2rem",
+                        padding: "0 0.5rem",
+                        fontSize: "var(--text-xs)",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--color-line)",
+                        background: "var(--color-paper)",
+                        color: "var(--color-ink)",
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Step Description (Optional)"
+                      value={step.description}
+                      onChange={(e) => {
+                        const copy = [...stepsList];
+                        copy[idx].description = e.target.value;
+                        setStepsList(copy);
+                      }}
+                      style={{
+                        flex: 1.2,
+                        height: "2rem",
+                        padding: "0 0.5rem",
+                        fontSize: "var(--text-xs)",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--color-line)",
+                        background: "var(--color-paper)",
+                        color: "var(--color-ink)",
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

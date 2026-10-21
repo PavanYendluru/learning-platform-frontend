@@ -33,6 +33,8 @@ import {
   Pencil,
   Trash2,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   ArrowLeft,
   Lock,
   type LucideIcon,
@@ -80,6 +82,8 @@ export type IconName =
   | "pencil"
   | "trash"
   | "chevronRight"
+  | "chevronUp"
+  | "chevronDown"
   | "arrowLeft"
   | "lock";
 
@@ -138,6 +142,8 @@ const icons: Record<IconName, LucideIcon> = {
   pencil: Pencil,
   trash: Trash2,
   chevronRight: ChevronRight,
+  chevronUp: ChevronUp,
+  chevronDown: ChevronDown,
   arrowLeft: ArrowLeft,
   lock: Lock,
 };

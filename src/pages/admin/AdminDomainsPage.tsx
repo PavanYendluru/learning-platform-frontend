@@ -38,12 +38,10 @@ export function AdminDomainsPage() {
     setLoading(true);
     adminApi
       .getAdminDomains()
-      .then((data) => setDomains(data))
-      .catch(() => {
-        setDomains([
-          { id: 1, name: "Java & Spring Boot", slug: "java-spring-boot", description: "Backend development with Spring Boot", difficulty: "BEGINNER", status: "ACTIVE" },
-          { id: 2, name: "Frontend & React", slug: "frontend-react", description: "Modern Web Apps with React 19", difficulty: "INTERMEDIATE", status: "ACTIVE" },
-        ]);
+      .then((data) => setDomains(data ?? []))
+      .catch((err: any) => {
+        setDomains([]);
+        toast.error(err?.message || "Failed to load domains");
       })
       .finally(() => setLoading(false));
   };
@@ -89,25 +87,8 @@ export function AdminDomainsPage() {
       }
       setIsModalOpen(false);
       fetchDomains();
-    } catch {
-      if (editingDomain) {
-        setDomains((prev) => prev.map((d) => (d.id === editingDomain.id ? { ...d, ...formData } : d)));
-        toast.success(`Domain "${formData.name}" updated`);
-      } else {
-        const newDomain: Domain = {
-          id: Date.now(),
-          name: formData.name,
-          slug: formData.name.toLowerCase().replace(/\s+/g, "-"),
-          description: formData.description,
-          difficulty: formData.difficulty,
-          status: formData.status ?? "ACTIVE",
-          bannerUrl: formData.bannerUrl,
-          iconUrl: formData.iconUrl,
-        };
-        setDomains((prev) => [newDomain, ...prev]);
-        toast.success(`Domain "${formData.name}" created`);
-      }
-      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || (editingDomain ? "Failed to update domain" : "Failed to create domain"));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,9 +118,8 @@ export function AdminDomainsPage() {
       await adminApi.deleteDomain(pendingDeleteDomain.id);
       setDomains((prev) => prev.filter((d) => d.id !== pendingDeleteDomain.id));
       toast.success(`Domain "${pendingDeleteDomain.name}" deleted successfully`);
-    } catch {
-      setDomains((prev) => prev.filter((d) => d.id !== pendingDeleteDomain.id));
-      toast.success(`Domain deleted`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete domain");
     } finally {
       setIsDeleting(false);
       setPendingDeleteDomain(null);
@@ -219,8 +199,9 @@ export function AdminDomainsPage() {
       header: "Actions",
       accessor: (d) => (
         <div style={{ display: "flex", gap: "0.35rem" }}>
-          <Button variant="ghost" onClick={() => navigate(`/admin/topics?domainId=${d.id}`)} style={{ padding: "0.25rem 0.55rem", minHeight: "2rem", fontSize: "var(--text-xs)" }}>
-            View Topics
+          <Button variant="ghost" onClick={() => navigate(`/admin/topics?domainId=${d.id}`)} style={{ padding: "0.25rem 0.55rem", minHeight: "2rem", fontSize: "var(--text-xs)", gap: "0.3rem" }}>
+            <Icon name="fileText" size={14} />
+            Topics
           </Button>
           <Button variant="ghost" onClick={() => handleOpenEdit(d)} style={{ padding: "0.25rem 0.55rem", minHeight: "2rem", fontSize: "var(--text-xs)" }}>
             <Icon name="pencil" size={14} />

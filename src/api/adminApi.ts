@@ -3,7 +3,7 @@ import type { ApiResponse, Role } from "../types/auth.types";
 import type { Domain } from "../types/dashboard.types";
 import type { Topic } from "../types/dashboard.types";
 import type { BackendResource, PagedResponse, ResourceType } from "./resourceApi";
-import type { BackendRoadmap } from "./roadmapApi";
+import type { BackendRoadmap, BackendRoadmapStep } from "./roadmapApi";
 import type { User, UserStatus } from "../types/user.types";
 import type { ActivityLogItem } from "../types/activity.types";
 
@@ -146,6 +146,11 @@ export const adminApi = {
   },
 
   /* Topic Management */
+  getAllAdminTopics: async (): Promise<Topic[]> => {
+    const response = await apiClient<ApiResponse<Topic[]>>("/admin/topics");
+    return response.data ?? [];
+  },
+
   getAdminTopicsByDomain: async (domainId: number): Promise<Topic[]> => {
     const response = await apiClient<ApiResponse<Topic[]>>(`/admin/domains/${domainId}/topics`);
     return response.data ?? [];
@@ -233,7 +238,7 @@ export const adminApi = {
 
   /* Technology Updates Management */
   getTechnologyUpdates: async (): Promise<TechnologyUpdate[]> => {
-    const response = await apiClient<ApiResponse<TechnologyUpdate[]>>("/technology-updates");
+    const response = await apiClient<ApiResponse<TechnologyUpdate[]>>("/admin/technology-updates");
     return response.data ?? [];
   },
 
@@ -260,6 +265,23 @@ export const adminApi = {
   },
 
   /* Roadmap Management */
+  getAdminRoadmapByDomain: async (domainId: number): Promise<BackendRoadmap | null> => {
+    try {
+      const response = await apiClient<ApiResponse<BackendRoadmap>>(`/admin/domains/${domainId}/roadmap`);
+      return response.data ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  createOrUpdateDomainRoadmap: async (domainId: number, payload: CreateRoadmapPayload): Promise<BackendRoadmap> => {
+    const response = await apiClient<ApiResponse<BackendRoadmap>>(`/admin/domains/${domainId}/roadmap`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response.data;
+  },
+
   createRoadmap: async (payload: CreateRoadmapPayload): Promise<BackendRoadmap> => {
     const response = await apiClient<ApiResponse<BackendRoadmap>>("/admin/roadmaps", {
       method: "POST",
@@ -280,6 +302,36 @@ export const adminApi = {
     await apiClient<ApiResponse<void>>(`/admin/roadmaps/${id}`, {
       method: "DELETE",
     });
+  },
+
+  addRoadmapStep: async (roadmapId: number, payload: { topicId?: number; title: string; description?: string; stepOrder?: number }): Promise<BackendRoadmapStep> => {
+    const response = await apiClient<ApiResponse<BackendRoadmapStep>>(`/admin/roadmaps/${roadmapId}/steps`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response.data;
+  },
+
+  updateRoadmapStep: async (stepId: number, payload: { topicId?: number; title: string; description?: string; stepOrder?: number }): Promise<BackendRoadmapStep> => {
+    const response = await apiClient<ApiResponse<BackendRoadmapStep>>(`/admin/roadmap-steps/${stepId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    return response.data;
+  },
+
+  deleteRoadmapStep: async (stepId: number): Promise<void> => {
+    await apiClient<ApiResponse<void>>(`/admin/roadmap-steps/${stepId}`, {
+      method: "DELETE",
+    });
+  },
+
+  reorderRoadmapSteps: async (roadmapId: number, stepIds: number[]): Promise<BackendRoadmap> => {
+    const response = await apiClient<ApiResponse<BackendRoadmap>>(`/admin/roadmaps/${roadmapId}/reorder`, {
+      method: "PUT",
+      body: JSON.stringify({ stepIds }),
+    });
+    return response.data;
   },
 
   /* User Management */

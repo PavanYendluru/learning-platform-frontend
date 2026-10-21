@@ -16,7 +16,10 @@ export function AdminTopicsPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
-  const selectedDomainId = Number(searchParams.get("domainId")) || 1;
+
+  const domainParam = searchParams.get("domainId");
+  const selectedDomainId: "ALL" | number =
+    domainParam === "all" || !domainParam ? "ALL" : Number(domainParam) || "ALL";
 
   const [domains, setDomains] = useState<Domain[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -25,6 +28,7 @@ export function AdminTopicsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+  const [createTopicDomainId, setCreateTopicDomainId] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* Confirmation target state for Delete */
@@ -40,26 +44,34 @@ export function AdminTopicsPage() {
   });
 
   useEffect(() => {
-    domainApi.getDomains().then((res) => setDomains(res)).catch(() => {});
+    domainApi
+      .getDomains()
+      .then((res) => {
+        setDomains(res);
+        if (res.length > 0) {
+          setCreateTopicDomainId(res[0].id);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const currentDomain = domains.find((d) => d.id === selectedDomainId) ?? {
-    id: selectedDomainId,
-    name: "Spring Boot 3",
-    slug: "spring-boot-3",
-    description: "Backend architecture & microservices",
-  };
+  const currentDomain =
+    selectedDomainId === "ALL"
+      ? null
+      : domains.find((d) => d.id === selectedDomainId) ?? null;
 
-  const fetchTopics = (domainId: number) => {
+  const fetchTopics = (domainId: "ALL" | number) => {
     setLoading(true);
-    adminApi
-      .getAdminTopicsByDomain(domainId)
-      .then((data) => setTopics(data))
-      .catch(() => {
-        setTopics([
-          { id: 101, domainId, name: "Spring Core & Dependency Injection", slug: "spring-core", description: "Inversion of Control and Bean Management", sequenceNumber: 1, difficulty: "BEGINNER", status: "ACTIVE" },
-          { id: 102, domainId, name: "Spring Security & JWT", slug: "spring-security", description: "Filters, JWT Auth, and Role Guards", sequenceNumber: 2, difficulty: "INTERMEDIATE", status: "ACTIVE" },
-        ]);
+    const fetchPromise =
+      domainId === "ALL"
+        ? adminApi.getAllAdminTopics()
+        : adminApi.getAdminTopicsByDomain(domainId);
+
+    fetchPromise
+      .then((data) => setTopics(data ?? []))
+      .catch((err: any) => {
+        setTopics([]);
+        toast.error(err?.message || "Failed to load topics");
       })
       .finally(() => setLoading(false));
   };
@@ -70,12 +82,24 @@ export function AdminTopicsPage() {
 
   function handleOpenCreate() {
     setEditingTopic(null);
-    setFormData({ name: "", description: "", sequenceNumber: topics.length + 1, difficulty: "BEGINNER", status: "ACTIVE" });
+    const defaultDomainId =
+      selectedDomainId !== "ALL"
+        ? selectedDomainId
+        : domains[0]?.id ?? 1;
+    setCreateTopicDomainId(defaultDomainId);
+    setFormData({
+      name: "",
+      description: "",
+      sequenceNumber: topics.length + 1,
+      difficulty: "BEGINNER",
+      status: "ACTIVE",
+    });
     setIsModalOpen(true);
   }
 
   function handleOpenEdit(topic: Topic) {
     setEditingTopic(topic);
+    setCreateTopicDomainId(topic.domainId ?? domains[0]?.id ?? 1);
     setFormData({
       name: topic.name,
       description: topic.description ?? "",
@@ -93,29 +117,28 @@ export function AdminTopicsPage() {
       return;
     }
 
+    const domainToUse = editingTopic
+      ? editingTopic.domainId
+      : createTopicDomainId || (selectedDomainId !== "ALL" ? selectedDomainId : domains[0]?.id);
+
+    if (!domainToUse) {
+      toast.error("Please select a valid domain for this topic");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (editingTopic) {
         await adminApi.updateTopic(editingTopic.id, formData);
         toast.success(`Topic "${formData.name}" updated successfully`);
       } else {
-        await adminApi.createTopic(selectedDomainId, formData);
+        await adminApi.createTopic(domainToUse, formData);
         toast.success(`Topic "${formData.name}" created successfully`);
       }
       setIsModalOpen(false);
       fetchTopics(selectedDomainId);
-    } catch {
-      if (editingTopic) {
-        setTopics((prev) => prev.map((t) => (t.id === editingTopic.id ? { ...t, ...formData } : t)));
-        toast.success(`Topic "${formData.name}" updated`);
-      } else {
-        setTopics((prev) => [
-          ...prev,
-          { id: Date.now(), domainId: selectedDomainId, slug: formData.name.toLowerCase().replace(/\s+/g, "-"), ...formData },
-        ]);
-        toast.success(`Topic "${formData.name}" created`);
-      }
-      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || (editingTopic ? "Failed to update topic" : "Failed to create topic"));
     } finally {
       setIsSubmitting(false);
     }
@@ -128,9 +151,8 @@ export function AdminTopicsPage() {
       await adminApi.deleteTopic(pendingDeleteTopic.id);
       setTopics((prev) => prev.filter((t) => t.id !== pendingDeleteTopic.id));
       toast.success(`Topic "${pendingDeleteTopic.name}" deleted successfully`);
-    } catch {
-      setTopics((prev) => prev.filter((t) => t.id !== pendingDeleteTopic.id));
-      toast.success(`Topic deleted`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete topic");
     } finally {
       setIsDeleting(false);
       setPendingDeleteTopic(null);
@@ -166,14 +188,17 @@ export function AdminTopicsPage() {
     },
     {
       header: "Topic Name",
-      accessor: (t) => (
-        <div>
-          <strong style={{ color: "var(--color-ink)", display: "block" }}>{t.name}</strong>
-          <span style={{ fontSize: "var(--text-xs)", color: "var(--color-muted)" }}>
-            /{t.slug} • Domain: {currentDomain.name}
-          </span>
-        </div>
-      ),
+      accessor: (t) => {
+        const domain = domains.find((d) => d.id === t.domainId);
+        return (
+          <div>
+            <strong style={{ color: "var(--color-ink)", display: "block" }}>{t.name}</strong>
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-muted)" }}>
+              /{t.slug} • Domain: <span className="status-pill in-progress" style={{ fontSize: "0.7rem", padding: "0.1rem 0.45rem" }}>{domain?.name ?? `Domain #${t.domainId}`}</span>
+            </span>
+          </div>
+        );
+      },
     },
     {
       header: "Description",
@@ -212,8 +237,8 @@ export function AdminTopicsPage() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
         <PageHeader
-          title={`Topic Management: ${currentDomain.name}`}
-          description={`Create, order, and manage learning topics within domain "${currentDomain.name}".`}
+          title={selectedDomainId === "ALL" ? "Topic Management: All Domains" : `Topic Management: ${currentDomain?.name ?? "Selected Domain"}`}
+          description={selectedDomainId === "ALL" ? "View and manage topics across all learning domains in the platform." : `Create, order, and manage learning topics within domain "${currentDomain?.name ?? ""}".`}
         />
         <Button variant="primary" onClick={handleOpenCreate}>
           <Icon name="plus" size={16} />
@@ -227,8 +252,29 @@ export function AdminTopicsPage() {
           Switch Domain Context:
         </span>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+          <button
+            type="button"
+            onClick={() => setSearchParams({ domainId: "all" })}
+            style={{
+              padding: "0.4rem 0.85rem",
+              borderRadius: "var(--radius-md)",
+              border: selectedDomainId === "ALL" ? "1.5px solid var(--color-primary)" : "1px solid var(--color-line)",
+              background: selectedDomainId === "ALL" ? "rgba(99, 102, 241, 0.12)" : "var(--color-surface)",
+              color: selectedDomainId === "ALL" ? "var(--color-primary)" : "var(--color-ink)",
+              fontWeight: selectedDomainId === "ALL" ? 800 : 500,
+              fontSize: "var(--text-xs)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
+          >
+            <Icon name="grid" size={14} />
+            All Domains
+          </button>
+
           {domains.map((d) => {
-            const isSelected = d.id === selectedDomainId;
+            const isSelected = selectedDomainId === d.id;
             return (
               <button
                 key={d.id}
@@ -269,17 +315,38 @@ export function AdminTopicsPage() {
       </div>
 
       {loading ? (
-        <LoadingState message="Loading domain topics..." />
+        <LoadingState message="Loading topics..." />
       ) : (
-        <AdminDataTable columns={columns} data={filteredTopics} emptyMessage={`No topics found for domain "${currentDomain.name}".`} />
+        <AdminDataTable
+          columns={columns}
+          data={filteredTopics}
+          emptyMessage={
+            selectedDomainId === "ALL"
+              ? "No topics have been created yet. Click 'Create New Topic' above."
+              : `No topics found for domain "${currentDomain?.name ?? "Selected Domain"}". Click 'Create New Topic' above to add one.`
+          }
+        />
       )}
 
       {/* Reusable AdminModal for Create/Edit */}
       <AdminModal isOpen={isModalOpen} title={editingTopic ? "Edit Topic" : "Create New Topic"} onClose={() => setIsModalOpen(false)}>
         <form onSubmit={handleSubmitTopic} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "rgba(99, 102, 241, 0.08)", fontSize: "var(--text-xs)", color: "var(--color-primary)" }}>
-            Adding topic under domain: <strong>{currentDomain.name}</strong>
-          </div>
+          {/* Domain Selection */}
+          <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "var(--text-sm)", fontWeight: 700 }}>
+            <span>Domain *</span>
+            <select
+              value={createTopicDomainId}
+              onChange={(e) => setCreateTopicDomainId(Number(e.target.value))}
+              disabled={Boolean(editingTopic)}
+              style={{ height: "2.5rem", padding: "0 0.75rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-line)", background: "var(--color-paper)", color: "var(--color-ink)" }}
+            >
+              {domains.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "var(--text-sm)", fontWeight: 700 }}>
             <span>Topic Name *</span>
@@ -345,7 +412,7 @@ export function AdminTopicsPage() {
       <ConfirmationModal
         isOpen={Boolean(pendingDeleteTopic)}
         title="Delete Topic"
-        message={`Are you sure you want to delete the topic "${pendingDeleteTopic?.name}"? All associated resources in this topic may be unassigned.`}
+        message={`Are you sure you want to delete the topic "${pendingDeleteTopic?.name}"? All associated resources in this topic will also be cleanly removed.`}
         confirmLabel="Delete Topic"
         variant="danger"
         isLoading={isDeleting}

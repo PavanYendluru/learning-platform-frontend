@@ -35,12 +35,56 @@ export function BookmarksPage() {
             <article key={bookmark.id} className="bookmark-card card">
               <div className="bookmark-header">
                 <div>
-                  <span
-                    className="resource-type-badge"
-                    style={{ position: "static", display: "inline-block", marginBottom: "0.4rem" }}
-                  >
-                    {bookmark.resourceType}
-                  </span>
+                  <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap", marginBottom: "0.4rem" }}>
+                    <span
+                      className="resource-type-badge"
+                      style={{ position: "static", display: "inline-block" }}
+                    >
+                      {bookmark.resourceType}
+                    </span>
+                    {bookmark.domainName && (
+                      <button
+                        type="button"
+                        style={{
+                          border: "none",
+                          background: "var(--color-primary-light, rgba(99, 102, 241, 0.1))",
+                          color: "var(--color-primary)",
+                          fontSize: "var(--text-xs)",
+                          padding: "0.15rem 0.5rem",
+                          borderRadius: "4px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => bookmark.domainId && navigate(`/domains/${bookmark.domainId}`)}
+                        title={`Go to domain: ${bookmark.domainName}`}
+                      >
+                        {bookmark.domainName}
+                      </button>
+                    )}
+                    {bookmark.topicName && (
+                      <button
+                        type="button"
+                        style={{
+                          border: "none",
+                          background: "var(--color-surface-hover, rgba(0,0,0,0.05))",
+                          color: "var(--color-muted)",
+                          fontSize: "var(--text-xs)",
+                          padding: "0.15rem 0.5rem",
+                          borderRadius: "4px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          bookmark.domainId &&
+                          bookmark.topicId &&
+                          navigate(`/domains/${bookmark.domainId}/topics/${bookmark.topicId}`)
+                        }
+                        title={`Go to topic: ${bookmark.topicName}`}
+                      >
+                        › {bookmark.topicName}
+                      </button>
+                    )}
+                  </div>
                   <h3>{bookmark.resourceTitle}</h3>
                 </div>
 

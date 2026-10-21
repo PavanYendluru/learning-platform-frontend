@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "../layouts/AppLayout";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { RegisterPage } from "../pages/auth/RegisterPage";
+import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
 import { PlaceholderPage } from "../pages/common/PlaceholderPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
@@ -37,24 +38,29 @@ export function AppRoutes() {
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          {/* USER-only learning app */}
-          <Route element={<RoleRoute allowedRoles={["USER"]} />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+          {/* Shared catalog and settings for learners and admins */}
+          <Route element={<RoleRoute allowedRoles={["USER", "ADMIN"]} />}>
             <Route path="/domains" element={<ExploreDomainsPage />} />
             <Route path="/domains/:domainId" element={<DomainDetailsPage />} />
             <Route path="/domains/:domainId/topics/:topicId" element={<TopicDetailsPage />} />
-            <Route path="/my-learning" element={<MyLearningPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/resources/:resourceId" element={<ResourceDetailsPage />} />
-            <Route path="/progress" element={<ProgressPage />} />
             <Route path="/roadmaps" element={<LearningRoadmapsPage />} />
             <Route path="/roadmaps/:roadmapId" element={<RoadmapDetailsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+
+          {/* USER learner portal */}
+          <Route element={<RoleRoute allowedRoles={["USER"]} />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/my-learning" element={<MyLearningPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
+            <Route path="/progress" element={<ProgressPage />} />
           </Route>
 
           {/* ADMIN-only */}

@@ -139,8 +139,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           />
         </label>
 
-        <label className="auth-field">
-          <span>Password</span>
+        <div className="auth-field">
+          <div className="auth-field-header">
+            <span>Password</span>
+            {isLogin && (
+              <Link to="/forgot-password" className="auth-forgot-link">
+                Forgot password?
+              </Link>
+            )}
+          </div>
           <input
             type="password"
             value={password}
@@ -149,7 +156,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             autoComplete={isLogin ? "current-password" : "new-password"}
             required
           />
-        </label>
+        </div>
 
         {!isLogin && (
           <label className="auth-field">

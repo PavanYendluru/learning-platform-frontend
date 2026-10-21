@@ -145,3 +145,105 @@
   font-weight: 800;
   color: var(--color-primary);
 }
+
+/* Domain Navigation Tabs */
+.domain-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-line);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.domain-tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.domain-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.domain-tab-btn:hover {
+  color: var(--color-ink);
+}
+
+.domain-tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.domain-tab-badge {
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.domain-tab-btn.active .domain-tab-badge {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  border-color: transparent;
+}
+
+/* Roadmap timeline in domain */
+.roadmap-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.roadmap-step-card {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.35rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  align-items: flex-start;
+  border: 1px solid var(--color-line);
+}
+
+.step-order-circle {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: var(--text-sm);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-content h3 {
+  margin: 0 0 0.35rem;
+  font: 800 var(--text-lg) / 1.2 var(--font-display);
+  color: var(--color-ink);
+}
+
+.step-content p {
+  margin: 0 0 0.75rem;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: 1.45;
+}

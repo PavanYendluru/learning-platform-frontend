@@ -32,4 +32,13 @@ export const roadmapApi = {
     const response = await apiClient<ApiResponse<BackendRoadmap>>(`/roadmaps/${id}`);
     return response.data;
   },
+
+  getDomainRoadmap: async (domainId: number): Promise<BackendRoadmap | null> => {
+    try {
+      const response = await apiClient<ApiResponse<BackendRoadmap>>(`/domains/${domainId}/roadmap`);
+      return response.data ?? null;
+    } catch {
+      return null;
+    }
+  },
 };

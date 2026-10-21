@@ -17,9 +17,8 @@ export function useTopics(domainId: number) {
       .getTopicsByDomain(domainId)
       .then((data) => {
         if (active) {
-          const items = data.length > 0 ? data : fallbackTopics[domainId] ?? [];
-          setTopics(items);
-          setUsingFallback(data.length === 0);
+          setTopics(Array.isArray(data) ? data : []);
+          setUsingFallback(false);
           setError(null);
         }
       })

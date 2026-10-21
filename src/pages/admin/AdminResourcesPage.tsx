@@ -55,9 +55,9 @@ export function AdminResourcesPage() {
     topicId: 101,
     title: "",
     description: "",
-    resourceType: "VIDEO",
+    resourceType: "DOCUMENTATION",
     externalUrl: "",
-    youtubeContentType: "VIDEO",
+    youtubeContentType: undefined,
     author: "",
     publisher: "",
     sourceName: "",
@@ -98,42 +98,9 @@ export function AdminResourcesPage() {
         if (data && data.content) setResources(data.content);
         else setResources([]);
       })
-      .catch(() => {
-        setResources([
-          {
-            id: 1,
-            topicId: 101,
-            title: "Spring Boot 3 Full Course",
-            description: "Complete guide to Spring Boot 3 & REST APIs",
-            resourceType: "VIDEO",
-            externalUrl: "https://www.youtube.com/watch?v=35EQXmHKZYs",
-            youtubeContentType: "FULL_COURSE",
-            author: "Java Tech",
-            durationMinutes: 120,
-            status: "PUBLISHED",
-          },
-          {
-            id: 2,
-            topicId: 102,
-            title: "Spring Data JPA Reference Documentation",
-            description: "Official reference guide for Spring Data JPA repositories",
-            resourceType: "DOCUMENTATION",
-            externalUrl: "https://docs.spring.io/spring-data/jpa/reference/index.html",
-            sourceName: "Spring Team",
-            status: "PUBLISHED",
-          },
-          {
-            id: 3,
-            topicId: 102,
-            title: "OAuth 2.0 & JWT Security Patterns in Microservices",
-            description: "Research paper on stateless token-based authorization",
-            resourceType: "RESEARCH_PAPER",
-            externalUrl: "https://arxiv.org/abs/2103.00000",
-            author: "Dr. A. Smith",
-            doi: "10.1109/TSE.2023.123456",
-            status: "PENDING_REVIEW",
-          },
-        ]);
+      .catch((err: any) => {
+        setResources([]);
+        toast.error(err?.message || "Failed to fetch resources");
       })
       .finally(() => setLoading(false));
   };
@@ -148,9 +115,9 @@ export function AdminResourcesPage() {
       topicId: topics[0]?.id ?? 101,
       title: "",
       description: "",
-      resourceType: "VIDEO",
+      resourceType: "DOCUMENTATION",
       externalUrl: "",
-      youtubeContentType: "VIDEO",
+      youtubeContentType: undefined,
       author: "",
       publisher: "",
       sourceName: "",
@@ -170,6 +137,7 @@ export function AdminResourcesPage() {
       description: r.description ?? "",
       resourceType: r.resourceType,
       externalUrl: r.externalUrl,
+      youtubeContentType: r.resourceType === "VIDEO" ? (r.youtubeContentType || "VIDEO") : undefined,
       author: r.author ?? "",
       publisher: r.publisher ?? "",
       sourceName: r.sourceName ?? "",
@@ -188,30 +156,26 @@ export function AdminResourcesPage() {
       return;
     }
 
+    const payload: CreateResourcePayload = {
+      ...formData,
+      title: formData.title.trim(),
+      externalUrl: formData.externalUrl.trim(),
+      youtubeContentType: formData.resourceType === "VIDEO" ? (formData.youtubeContentType || "VIDEO") : undefined,
+    };
+
     setIsSubmitting(true);
     try {
       if (editingResource) {
-        await adminApi.updateResource(editingResource.id, formData);
-        toast.success(`Resource "${formData.title}" updated successfully`);
+        await adminApi.updateResource(editingResource.id, payload);
+        toast.success(`Resource "${payload.title}" updated successfully`);
       } else {
-        await adminApi.createResource(formData);
-        toast.success(`Resource "${formData.title}" created successfully`);
+        await adminApi.createResource(payload);
+        toast.success(`Resource "${payload.title}" created successfully`);
       }
       setIsModalOpen(false);
       fetchResources(activeFilter);
-    } catch {
-      if (editingResource) {
-        setResources((prev) => prev.map((r) => (r.id === editingResource.id ? { ...r, ...formData } : r)));
-        toast.success(`Resource updated`);
-      } else {
-        const newRes: BackendResource = {
-          id: Date.now(),
-          ...formData,
-        };
-        setResources((prev) => [newRes, ...prev]);
-        toast.success(`Resource created`);
-      }
-      setIsModalOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || (editingResource ? "Failed to update resource" : "Failed to create resource"));
     } finally {
       setIsSubmitting(false);
     }

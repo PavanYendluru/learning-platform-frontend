@@ -16,9 +16,9 @@ export function useResources(params?: ResourceSearchParams) {
       .searchResources(params)
       .then((data) => {
         if (active) {
-          const items = data.content && data.content.length > 0 ? data.content : fallbackResources;
+          const items = Array.isArray(data?.content) ? data.content : [];
           setResources(items);
-          setUsingFallback(!data.content || data.content.length === 0);
+          setUsingFallback(false);
           setError(null);
         }
       })

@@ -3,16 +3,13 @@ import { dashboardApi } from "../api/dashboardApi";
 import { dashboardFallback } from "../api/dashboardFallback";
 import type { DashboardData } from "../types/dashboard.types";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
 export function useDashboard() {
   const [data, setData] = useState<DashboardData>(dashboardFallback);
-  const [loading, setLoading] = useState(Boolean(apiBaseUrl));
-  const [usingFallback, setUsingFallback] = useState(!apiBaseUrl);
+  const [loading, setLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!apiBaseUrl) return;
 
     let active = true;
 

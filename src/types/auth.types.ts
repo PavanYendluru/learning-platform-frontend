@@ -31,3 +31,33 @@ export type ApiResponse<T> = {
   data: T;
   timestamp: string;
 };
+
+export type SendOtpRequest = {
+  email: string;
+  name?: string;
+};
+
+export type VerifyOtpRequest = {
+  email: string;
+  otp: string;
+  purpose: "REGISTRATION" | "PASSWORD_RESET";
+};
+
+export type VerifyOtpResponse = {
+  verificationToken: string;
+  expiresInSeconds: number;
+  message: string;
+};
+
+export type CompleteRegistrationRequest = {
+  name: string;
+  email: string;
+  password: string;
+  verificationToken: string;
+};
+
+export type ResetPasswordRequest = {
+  email: string;
+  newPassword: string;
+  resetToken: string;
+};

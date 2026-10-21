@@ -15,9 +15,8 @@ export function useRoadmaps() {
       .getPublishedRoadmaps()
       .then((data) => {
         if (active) {
-          const items = data.length > 0 ? data : fallbackRoadmaps;
-          setRoadmaps(items);
-          setUsingFallback(data.length === 0);
+          setRoadmaps(Array.isArray(data) ? data : []);
+          setUsingFallback(false);
           setError(null);
         }
       })

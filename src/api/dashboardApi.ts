@@ -11,10 +11,22 @@ export interface BackendProgressItem {
   id: number;
   topicId: number;
   topicName: string;
+  domainId?: number;
+  domainName?: string;
   completed: boolean;
   progressPercentage: number;
   completedAt?: string;
   updatedAt?: string;
+}
+
+export interface DomainProgressData {
+  domainId: number;
+  domainName: string;
+  progressPercentage: number;
+  completedTopics: number;
+  totalTopics: number;
+  completedResources: number;
+  totalResources: number;
 }
 
 export interface BackendBookmarkItem {
